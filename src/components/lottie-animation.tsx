@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { LottieComponentProps } from "lottie-react";
 
 const LottiePlayer = dynamic(() => import("lottie-react"), {
   ssr: false,
@@ -26,15 +25,9 @@ export function LottieAnimation({
   // Dynamic import of the JSON
   const animationData = require(`../../public/lottie/${path}`);
 
-  const defaultOptions: Partial<LottieComponentProps> = {
-    animationData,
-    loop,
-    autoplay,
-  };
-
   return (
     <div className={className} style={style}>
-      <LottiePlayer {...defaultOptions} />
+      <LottiePlayer animationData={animationData} loop={loop} autoplay={autoplay} />
     </div>
   );
 }

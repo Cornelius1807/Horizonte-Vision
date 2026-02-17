@@ -1,0 +1,68 @@
+graph TB
+    subgraph Cliente["🖥️ Cliente (Browser)"]
+        UI["Next.js App Router<br/>React + TailwindCSS"]
+        TFJS["TensorFlow.js<br/>coco-ssd"]
+        Lottie["Lottie Animations"]
+        Charts["Recharts"]
+        FM["Framer Motion"]
+
+        UI --> TFJS
+        UI --> Lottie
+        UI --> Charts
+        UI --> FM
+    end
+
+    subgraph Servidor["⚙️ Servidor (Next.js API Routes)"]
+        Auth["NextAuth.js<br/>(JWT + Credentials)"]
+        MW["Middleware<br/>(Role-based)"]
+        API["API Routes"]
+        Rules["Rules Engine"]
+        Audit["Audit Logger"]
+        Val["Zod Validation"]
+
+        MW --> API
+        API --> Auth
+        API --> Rules
+        API --> Audit
+        API --> Val
+    end
+
+    subgraph Datos["💾 Almacenamiento"]
+        DB[("Vercel Postgres<br/>(Prisma ORM)")]
+        Blob["Vercel Blob<br/>(Fotos)"]
+    end
+
+    subgraph Modelos["📊 Modelos de Datos"]
+        User["User<br/>(4 roles)"]
+        Area["Area<br/>(6 áreas)"]
+        RiskType["RiskType<br/>(2 tipos)"]
+        Report["Report<br/>(AI + final fields)"]
+        Action["Action<br/>(status + SLA)"]
+        AuditLog["AuditLog"]
+        RuleConfig["RuleConfig<br/>(thresholds)"]
+    end
+
+    UI -- "HTTPS" --> MW
+    API -- "Prisma" --> DB
+    API -- "Upload" --> Blob
+    TFJS -- "Detections" --> Rules
+
+    DB --> Modelos
+
+    subgraph Flujo["🔄 Flujo de Reporte"]
+        F1["1. Seleccionar Área"]
+        F2["2. Capturar Foto"]
+        F3["3. Análisis IA (browser)"]
+        F4["4. Confirmar Riesgo"]
+        F5["5. Enviar Reporte"]
+        F6["6. Crear Acciones"]
+
+        F1 --> F2 --> F3 --> F4 --> F5 --> F6
+    end
+
+    subgraph Roles["👥 Roles y Accesos"]
+        R1["WORKER: Reportar"]
+        R2["SUPERVISOR: Acciones + Dashboard"]
+        R3["CSST: Todo excepto Admin"]
+        R4["ADMIN: Config IA + Auditoría"]
+    end
