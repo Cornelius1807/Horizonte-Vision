@@ -1,0 +1,135 @@
+// Prisma schema for Horizonte Vision MVP
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  WORKER
+  SUPERVISOR
+  CSST
+  ADMIN
+}
+
+enum Severity {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum ActionStatus {
+  OPEN
+  IN_PROGRESS
+  DONE
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  role         Role     @default(WORKER)
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  reports       Report[]  @relation("CreatedBy")
+  touchedReports Report[] @relation("FirstTouchedBy")
+  actionsAssigned Action[] @relation("AssignedTo")
+  actionsCreated  Action[] @relation("AssignedBy")
+  auditLogs     AuditLog[]
+  ruleUpdates   RuleConfig[] @relation("UpdatedBy")
+}
+
+model Area {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  reports Report[]
+}
+
+model RiskType {
+  id                  String  @id @default(cuid())
+  code                String  @unique
+  name                String
+  description         String
+  recommendationsJson String  @default("[]") // JSON string array
+  isActive            Boolean @default(true)
+
+  reportsFinal     Report[] @relation("FinalRiskType")
+  reportsAiSuggested Report[] @relation("AiSuggestedRiskType")
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  createdById String
+  createdBy   User     @relation("CreatedBy", fields: [createdById], references: [id])
+
+  areaId String
+  area   Area   @relation(fields: [areaId], references: [id])
+
+  riskTypeIdFinal String?
+  riskTypeFinal   RiskType? @relation("FinalRiskType", fields: [riskTypeIdFinal], references: [id])
+  severityFinal   Severity?
+
+  description String
+  photoUrl    String
+  isAnonymous Boolean @default(false)
+
+  aiSuggestedRiskTypeId String?
+  aiSuggestedRiskType   RiskType? @relation("AiSuggestedRiskType", fields: [aiSuggestedRiskTypeId], references: [id])
+  aiSuggestedSeverity   Severity?
+  aiDetectionsJson      String?   // JSON string
+  aiExplanation         String?
+  aiConfidenceScore     Float?
+
+  firstTouchedAt   DateTime?
+  firstTouchedById String?
+  firstTouchedBy   User?   @relation("FirstTouchedBy", fields: [firstTouchedById], references: [id])
+
+  actions Action[]
+}
+
+model Action {
+  id           String       @id @default(cuid())
+  reportId     String
+  report       Report       @relation(fields: [reportId], references: [id])
+  assignedToId String
+  assignedTo   User         @relation("AssignedTo", fields: [assignedToId], references: [id])
+  assignedById String
+  assignedBy   User         @relation("AssignedBy", fields: [assignedById], references: [id])
+  dueDate      DateTime
+  status       ActionStatus @default(OPEN)
+  description  String       @default("")
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  closedAt     DateTime?
+  closeComment String?
+  closePhotoUrl String?
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  entityType  String
+  entityId    String
+  action      String
+  actorId     String?
+  actor       User?    @relation(fields: [actorId], references: [id])
+  payloadJson String?
+  createdAt   DateTime @default(now())
+}
+
+model RuleConfig {
+  id                        String  @id @default(cuid())
+  isEnabled                 Boolean @default(true)
+  minConfidenceForAutoSuggest Float  @default(0.5)
+  severityThresholdsJson    String  @default("{}")
+  updatedAt                 DateTime @updatedAt
+  updatedById               String?
+  updatedBy                 User?   @relation("UpdatedBy", fields: [updatedById], references: [id])
+}
