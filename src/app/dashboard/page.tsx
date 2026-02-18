@@ -47,7 +47,7 @@ import AppLayout from "@/components/app-layout";
 
 interface KPIs {
   totalReports: number;
-  bySeverity: { severity: string; _count: number }[];
+  reportsBySeverity: { severity: string; count: number }[];
   totalActions: number;
   openActions: number;
   inProgressActions: number;
@@ -58,9 +58,9 @@ interface KPIs {
 }
 
 interface Trends {
-  byArea: { areaId: string; areaName: string; count: number }[];
-  byRiskType: { riskTypeId: string; riskTypeName: string; count: number }[];
-  monthly: { month: string; count: number }[];
+  reportsByArea: { area: string; count: number }[];
+  reportsByRiskType: { riskType: string; count: number }[];
+  monthlyTrend: { month: string; total: number; high: number; medium: number; low: number }[];
 }
 
 interface Area {
@@ -148,14 +148,14 @@ export default function DashboardPage() {
   };
 
   const severityData =
-    kpis?.bySeverity?.map((s) => ({
+    kpis?.reportsBySeverity?.map((s) => ({
       name:
         s.severity === "HIGH"
           ? "Alto"
           : s.severity === "MEDIUM"
           ? "Medio"
           : "Bajo",
-      value: s._count,
+      value: s.count,
     })) || [];
 
   const canExport =
@@ -360,12 +360,12 @@ export default function DashboardPage() {
                 <CardTitle className="text-sm">Reportes por Área</CardTitle>
               </CardHeader>
               <CardContent>
-                {trends?.byArea && trends.byArea.length > 0 ? (
+                {trends?.reportsByArea && trends.reportsByArea.length > 0 ? (
                   <ResponsiveContainer width="100%" height={250}>
-                    <BarChart data={trends.byArea}>
+                    <BarChart data={trends.reportsByArea}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis
-                        dataKey="areaName"
+                        dataKey="area"
                         tick={{ fontSize: 11 }}
                         angle={-20}
                         textAnchor="end"
@@ -374,7 +374,7 @@ export default function DashboardPage() {
                       <YAxis allowDecimals={false} />
                       <Tooltip />
                       <Bar dataKey="count" name="Reportes" radius={[4, 4, 0, 0]}>
-                        {trends.byArea.map((_, i) => (
+                        {trends.reportsByArea.map((_, i) => (
                           <Cell
                             key={i}
                             fill={BAR_COLORS[i % BAR_COLORS.length]}
@@ -452,9 +452,9 @@ export default function DashboardPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {trends?.monthly && trends.monthly.length > 0 ? (
+                {trends?.monthlyTrend && trends.monthlyTrend.length > 0 ? (
                   <ResponsiveContainer width="100%" height={250}>
-                    <LineChart data={trends.monthly}>
+                    <LineChart data={trends.monthlyTrend}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                       <YAxis allowDecimals={false} />
@@ -462,12 +462,33 @@ export default function DashboardPage() {
                       <Legend />
                       <Line
                         type="monotone"
-                        dataKey="count"
-                        name="Reportes"
+                        dataKey="total"
+                        name="Total"
                         stroke="#3b82f6"
                         strokeWidth={2}
                         dot={{ fill: "#3b82f6", r: 4 }}
                         activeDot={{ r: 6 }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="high"
+                        name="Alto"
+                        stroke="#ef4444"
+                        strokeWidth={1.5}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="medium"
+                        name="Medio"
+                        stroke="#f59e0b"
+                        strokeWidth={1.5}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="low"
+                        name="Bajo"
+                        stroke="#22c55e"
+                        strokeWidth={1.5}
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -492,14 +513,14 @@ export default function DashboardPage() {
                 <CardTitle className="text-sm">Reportes por Tipo de Riesgo</CardTitle>
               </CardHeader>
               <CardContent>
-                {trends?.byRiskType && trends.byRiskType.length > 0 ? (
+                {trends?.reportsByRiskType && trends.reportsByRiskType.length > 0 ? (
                   <div className="divide-y">
-                    {trends.byRiskType.map((rt, i) => (
+                    {trends.reportsByRiskType.map((rt, i) => (
                       <div
-                        key={rt.riskTypeId}
+                        key={rt.riskType}
                         className="flex items-center justify-between py-2"
                       >
-                        <span className="text-sm">{rt.riskTypeName}</span>
+                        <span className="text-sm">{rt.riskType}</span>
                         <div className="flex items-center gap-2">
                           <div
                             className="h-2 rounded-full"
@@ -508,7 +529,7 @@ export default function DashboardPage() {
                                 20,
                                 (rt.count /
                                   Math.max(
-                                    ...trends.byRiskType.map((r) => r.count)
+                                    ...trends.reportsByRiskType.map((r) => r.count)
                                   )) *
                                   120
                               )}px`,

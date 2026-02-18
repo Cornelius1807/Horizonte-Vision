@@ -251,8 +251,8 @@ export default function ReportPage() {
       toast.error("Ingrese una descripción");
       return;
     }
-    if (description.length > 250) {
-      toast.error("La descripción no puede exceder 250 caracteres");
+    if (description.length > 500) {
+      toast.error("La descripción no puede exceder 500 caracteres");
       return;
     }
 
@@ -669,7 +669,7 @@ export default function ReportPage() {
                     <Label htmlFor="description">
                       Descripción breve{" "}
                       <span className="text-muted-foreground">
-                        ({description.length}/250)
+                        ({description.length}/500)
                       </span>
                     </Label>
                     <Textarea
@@ -677,7 +677,7 @@ export default function ReportPage() {
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       placeholder="Describa brevemente la situación de riesgo observada..."
-                      maxLength={250}
+                      maxLength={500}
                       rows={4}
                     />
                   </div>

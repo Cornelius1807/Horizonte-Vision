@@ -7,8 +7,8 @@ export const loginSchema = z.object({
 
 export const reportCreateSchema = z.object({
   areaId: z.string().min(1, "Selecciona un área"),
-  description: z.string().min(1, "La descripción es requerida").max(250, "Máximo 250 caracteres"),
-  photoUrl: z.string().url("URL de foto inválida"),
+  description: z.string().min(1, "La descripción es requerida").max(500, "Máximo 500 caracteres"),
+  photoUrl: z.string().min(1, "La foto es requerida"),
   isAnonymous: z.boolean().default(false),
   riskTypeIdFinal: z.string().min(1, "Selecciona un tipo de riesgo"),
   severityFinal: z.enum(["HIGH", "MEDIUM", "LOW"]),
