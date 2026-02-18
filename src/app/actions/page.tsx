@@ -482,7 +482,7 @@ export default function ActionsPage() {
                             📍 {action.report?.area?.name} — {action.report?.riskTypeFinal?.name || "Sin tipo"}
                           </p>
                           <p>
-                            👤 Asignada a: {action.assignedTo.name} | Por: {action.assignedBy.name}
+                            👤 Asignada a: {action.assignedTo?.name || "—"} | Por: {action.assignedBy?.name || "—"}
                           </p>
                           <p className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />

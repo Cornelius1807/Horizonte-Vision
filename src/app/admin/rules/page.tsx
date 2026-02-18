@@ -37,10 +37,10 @@ interface RuleConfig {
 interface AuditEntry {
   id: string;
   action: string;
-  entity: string;
-  details: string | null;
+  entityType: string;
+  payloadJson: string | null;
   createdAt: string;
-  user: { name: string; email: string };
+  actor: { name: string; email: string } | null;
 }
 
 export default function AdminRulesPage() {
@@ -57,7 +57,7 @@ export default function AdminRulesPage() {
   useEffect(() => {
     Promise.all([
       fetch("/api/admin/rules").then((r) => r.json()),
-      fetch("/api/admin/audit?entity=RuleConfig&limit=10").then((r) => r.json()),
+      fetch("/api/admin/audit?entityType=RuleConfig").then((r) => r.json()),
     ])
       .then(([ruleData, auditData]) => {
         setConfig(ruleData);
@@ -94,10 +94,10 @@ export default function AdminRulesPage() {
         body: JSON.stringify({
           isEnabled,
           minConfidenceForAutoSuggest: minConfidence / 100,
-          severityThresholdsJson: {
+          severityThresholdsJson: JSON.stringify({
             HIGH: highThreshold,
             MEDIUM: mediumThreshold,
-          },
+          }),
         }),
       });
 
@@ -111,7 +111,7 @@ export default function AdminRulesPage() {
       toast.success("Configuración guardada exitosamente");
 
       // Refresh audit log
-      const auditRes = await fetch("/api/admin/audit?entity=RuleConfig&limit=10");
+      const auditRes = await fetch("/api/admin/audit?entityType=RuleConfig");
       const auditData = await auditRes.json();
       setAuditLogs(auditData);
     } catch (error) {
@@ -296,13 +296,13 @@ export default function AdminRulesPage() {
                   {auditLogs.map((log) => (
                     <div key={log.id} className="py-3 text-sm">
                       <div className="flex items-center justify-between">
-                        <span className="font-medium">{log.user.name}</span>
+                        <span className="font-medium">{log.actor?.name || "Sistema"}</span>
                         <span className="text-xs text-muted-foreground">
                           {formatDate(log.createdAt)}
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {log.action} — {log.details || "Sin detalles"}
+                        {log.action} — {log.payloadJson || "Sin detalles"}
                       </p>
                     </div>
                   ))}
