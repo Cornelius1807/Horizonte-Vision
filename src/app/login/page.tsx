@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { Shield, Mail, Lock, Loader2 } from "lucide-react";
@@ -16,7 +15,6 @@ const LottiePlayer = dynamic(() => import("lottie-react"), { ssr: false });
 import welcomeData from "../../../public/lottie/welcome.json";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -38,12 +36,11 @@ export default function LoginPage() {
         redirect: false,
       });
 
-      if (result?.error) {
-        toast.error("Credenciales inválidas");
+      if (!result?.ok || result?.error) {
+        toast.error(result?.error === "CredentialsSignin" ? "Credenciales inválidas" : (result?.error || "Credenciales inválidas"));
       } else {
         toast.success("¡Bienvenido!");
-        router.push("/dashboard");
-        router.refresh();
+        window.location.href = "/dashboard";
       }
     } catch {
       toast.error("Error al iniciar sesión");
@@ -121,12 +118,23 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <div className="mt-6 p-3 rounded-lg bg-muted/50 text-xs text-muted-foreground">
-              <p className="font-medium mb-1">Usuarios de demostración:</p>
-              <p>Admin: admin@horizontevision.pe</p>
-              <p>Supervisor: supervisor@horizontevision.pe</p>
-              <p>CSST: csst@horizontevision.pe</p>
-              <p>Trabajador: trabajador@horizontevision.pe</p>
+            <div className="mt-6 p-3 rounded-lg bg-muted/50 text-xs text-muted-foreground space-y-2">
+              <p className="font-medium">Usuarios de demostración (click para llenar):</p>
+              {[
+                { label: "Admin", email: "admin@horizontevision.pe", pw: "Hv$ecur3!Adm1n2026" },
+                { label: "Supervisor", email: "supervisor@horizontevision.pe", pw: "Super2026!" },
+                { label: "CSST", email: "csst@horizontevision.pe", pw: "Csst2026!" },
+                { label: "Trabajador", email: "trabajador@horizontevision.pe", pw: "Worker2026!" },
+              ].map((u) => (
+                <button
+                  key={u.email}
+                  type="button"
+                  onClick={() => { setEmail(u.email); setPassword(u.pw); }}
+                  className="block w-full text-left p-2 rounded hover:bg-muted transition-colors"
+                >
+                  <span className="font-medium">{u.label}:</span> {u.email}
+                </button>
+              ))}
             </div>
           </CardContent>
         </Card>

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { writeFile, mkdir } from "fs/promises";
+import path from "path";
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,14 +40,29 @@ export async function POST(request: NextRequest) {
     }
 
     const folder = (formData.get("folder") as string) || "report-photos";
-    const filename = `${folder}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+    const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+    const filename = `${folder}/${Date.now()}-${safeName}`;
 
-    const blob = await put(filename, file, {
-      access: "public",
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-    });
+    // Use Vercel Blob in production, local file storage in dev
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      const blob = await put(filename, file, {
+        access: "public",
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+      });
+      return NextResponse.json({ url: blob.url });
+    }
 
-    return NextResponse.json({ url: blob.url });
+    // Local fallback: save to public/uploads/
+    const uploadsDir = path.join(process.cwd(), "public", "uploads", folder);
+    await mkdir(uploadsDir, { recursive: true });
+
+    const localFilename = `${Date.now()}-${safeName}`;
+    const filePath = path.join(uploadsDir, localFilename);
+    const buffer = Buffer.from(await file.arrayBuffer());
+    await writeFile(filePath, buffer);
+
+    const url = `/uploads/${folder}/${localFilename}`;
+    return NextResponse.json({ url });
   } catch (error) {
     console.error("Blob upload error:", error);
     return NextResponse.json(

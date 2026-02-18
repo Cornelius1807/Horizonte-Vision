@@ -3,6 +3,9 @@ node_modules/
 .pnp
 .pnp.js
 
+# uploads (local dev)
+public/uploads/
+
 # testing
 coverage/
 
