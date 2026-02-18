@@ -114,9 +114,9 @@ La aplicación estará en **http://localhost:3000**
 | Rol | Email | Contraseña |
 |-----|-------|-----------|
 | Admin | admin@horizontevision.pe | Hv$ecur3!Adm1n2026 |
-| Trabajador | carlos.mendoza@ejemplo.pe | Trabajador123! |
-| Supervisor | maria.lopez@ejemplo.pe | Supervisor123! |
-| CSST | jorge.ramirez@ejemplo.pe | Csst123! |
+| Trabajador | trabajador@horizontevision.pe | Worker2026! |
+| Supervisor | supervisor@horizontevision.pe | Super2026! |
+| CSST | csst@horizontevision.pe | Csst2026! |
 
 ---
 

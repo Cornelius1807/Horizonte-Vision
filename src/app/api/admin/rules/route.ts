@@ -8,8 +8,8 @@ import { createAuditLog } from "@/lib/audit";
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+    if (!session) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
     const rule = await prisma.ruleConfig.findFirst();
