@@ -166,7 +166,7 @@ export default function AdminRulesPage() {
               </CardTitle>
               <CardDescription>
                 Estos parámetros controlan el comportamiento del motor de análisis
-                de riesgo basado en coco-ssd.
+                de riesgo basado en DETR (Transformers.js).
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">

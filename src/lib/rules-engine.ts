@@ -1,10 +1,11 @@
 /**
  * Motor de Reglas IA (Nivel 2) - Horizonte Vision
  *
- * Toma las detecciones de coco-ssd y aplica reglas para sugerir
- * tipo de riesgo y severidad con explicación.
+ * Toma las detecciones de DETR (DEtection TRansformer) vía Transformers.js
+ * y aplica reglas para sugerir tipo de riesgo y severidad con explicación.
  *
- * Funciona en cliente (browser) para evitar costos de servidor.
+ * Funciona en cliente (browser) sin API keys ni servidores — 100% gratis.
+ * Modelo: Xenova/detr-resnet-50 (Hugging Face)
  */
 
 export interface Detection {
@@ -27,7 +28,7 @@ export interface SeverityThresholds {
   low: { minObjects: number; minAvgScore: number };
 }
 
-// Objects commonly found as obstacles in coco-ssd
+// Objects commonly found as obstacles (COCO dataset classes, used by DETR)
 const OBSTACLE_CLASSES = new Set([
   "chair",
   "backpack",

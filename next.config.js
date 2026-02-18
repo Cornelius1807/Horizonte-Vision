@@ -9,7 +9,7 @@ const nextConfig = {
     ],
   },
   webpack: (config) => {
-    // Needed for @tensorflow/tfjs
+    // Needed for @huggingface/transformers (ONNX Runtime)
     config.resolve.fallback = {
       ...config.resolve.fallback,
       fs: false,

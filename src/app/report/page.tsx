@@ -71,6 +71,7 @@ export default function ReportPage() {
   const [photoPreview, setPhotoPreview] = useState("");
   const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [modelStatus, setModelStatus] = useState("");
   const [aiResult, setAiResult] = useState<RuleResult | null>(null);
   const [selectedRiskTypeId, setSelectedRiskTypeId] = useState("");
   const [selectedSeverity, setSelectedSeverity] = useState<"HIGH" | "MEDIUM" | "LOW">("MEDIUM");
@@ -167,29 +168,38 @@ export default function ReportPage() {
 
   const runAIAnalysis = useCallback(async () => {
     setAnalyzing(true);
+    setModelStatus("Cargando modelo DETR (primera vez descarga ~160 MB, luego es instantáneo)...");
     try {
-      // Load TensorFlow.js and coco-ssd
-      const tf = await import("@tensorflow/tfjs");
-      await tf.ready();
-      const cocoSsd = await import("@tensorflow-models/coco-ssd");
-      const model = await cocoSsd.load();
+      const { pipeline, env } = await import("@huggingface/transformers");
 
-      // Create image element
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      await new Promise<void>((resolve, reject) => {
-        img.onload = () => resolve();
-        img.onerror = reject;
-        img.src = photoPreview || photoUrl;
+      // Only download from HuggingFace Hub, use browser cache
+      env.allowLocalModels = false;
+
+      // Load DETR model (cached after first download)
+      const detector = await pipeline(
+        "object-detection",
+        "Xenova/detr-resnet-50",
+        { dtype: "fp32" }
+      );
+
+      setModelStatus("Analizando imagen con DETR...");
+
+      // Run detection with low threshold to capture all objects
+      const imageSource = photoPreview || photoUrl;
+      const results = await detector(imageSource, {
+        threshold: 0.15,
+        percentage: false,
       });
 
-      // Run detection
-      const predictions = await model.detect(img);
-
-      const detections: Detection[] = predictions.map((p) => ({
-        class: p.class,
-        score: p.score,
-        bbox: p.bbox as [number, number, number, number],
+      const detections: Detection[] = (results as Array<{ label: string; score: number; box: { xmin: number; ymin: number; xmax: number; ymax: number } }>).map((r) => ({
+        class: r.label,
+        score: r.score,
+        bbox: [
+          r.box.xmin,
+          r.box.ymin,
+          r.box.xmax - r.box.xmin,
+          r.box.ymax - r.box.ymin,
+        ] as [number, number, number, number],
       }));
 
       // Get rule config
@@ -228,6 +238,7 @@ export default function ReportPage() {
       setStep("confirm");
     } finally {
       setAnalyzing(false);
+      setModelStatus("");
     }
   }, [photoPreview, photoUrl, riskTypes]);
 
@@ -493,8 +504,11 @@ export default function ReportPage() {
                       <div className="w-40 h-40">
                         <LottiePlayer animationData={analyzingData} loop autoplay />
                       </div>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Analizando imagen con inteligencia artificial...
+                      <p className="text-sm text-muted-foreground mt-2 text-center">
+                        {modelStatus || "Analizando imagen con inteligencia artificial..."}
+                      </p>
+                      <p className="text-xs text-muted-foreground/60 mt-1">
+                        Modelo: DETR (DEtection TRansformer) — Hugging Face
                       </p>
                     </div>
                   ) : (

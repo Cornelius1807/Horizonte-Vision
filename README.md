@@ -2,7 +2,7 @@
 
 **Plataforma de Reportes de Riesgos de Seguridad con Análisis IA**
 
-Horizonte Vision es una aplicación web fullstack mobile-first que permite a trabajadores reportar riesgos de seguridad mediante fotos, las cuales son analizadas automáticamente por un motor de IA basado en **coco-ssd (TensorFlow.js)** con un motor de reglas explicable. Supervisores y CSST gestionan acciones correctivas, visualizan KPIs y exportan datos.
+Horizonte Vision es una aplicación web fullstack mobile-first que permite a trabajadores reportar riesgos de seguridad mediante fotos, las cuales son analizadas automáticamente por un motor de IA basado en **DETR (DEtection TRansformer)** vía **Transformers.js** de Hugging Face, con un motor de reglas explicable. Supervisores y CSST gestionan acciones correctivas, visualizan KPIs y exportan datos.
 
 ---
 
@@ -16,7 +16,7 @@ Horizonte Vision es una aplicación web fullstack mobile-first que permite a tra
 | Base de Datos | PostgreSQL (Vercel Postgres) + Prisma ORM |
 | Autenticación | NextAuth.js v4 (JWT + Credentials) |
 | Almacenamiento | Vercel Blob |
-| IA | TensorFlow.js + coco-ssd (in-browser) |
+| IA | Transformers.js + DETR (in-browser, Hugging Face) |
 | Gráficos | Recharts |
 | Validación | Zod |
 
@@ -25,7 +25,7 @@ Horizonte Vision es una aplicación web fullstack mobile-first que permite a tra
 ## 📋 Funcionalidades
 
 - **Reporte de riesgos** — Wizard de 5 pasos: área → foto → análisis IA → confirmación → envío
-- **Análisis IA** — Detección de objetos con coco-ssd, motor de reglas con explicaciones en español
+- **Análisis IA** — Detección de objetos con DETR (Transformers.js), motor de reglas con explicaciones en español
 - **Gestión de acciones** — Crear, asignar, cambiar estado, cerrar con evidencia fotográfica
 - **Dashboard** — KPIs, gráficos por área/severidad/tendencia, exportación CSV
 - **Admin** — Configuración de umbrales del motor IA, auditoría de cambios
@@ -218,10 +218,10 @@ prisma/
 
 ## 🧠 Motor de IA
 
-El motor de IA funciona **100% en el navegador** usando TensorFlow.js y el modelo coco-ssd:
+El motor de IA funciona **100% en el navegador** usando Transformers.js y el modelo DETR (Xenova/detr-resnet-50):
 
 1. El usuario captura o sube una foto
-2. coco-ssd detecta objetos en la imagen
+2. DETR (DEtection TRansformer) detecta objetos en la imagen — mucho más preciso que coco-ssd en escenas con multitudes
 3. El motor de reglas analiza las detecciones:
    - **Regla A (Obstrucción)**: ≥2 objetos clasificados como obstáculos
    - **Regla B (Orden y Limpieza)**: ≥3 objetos totales o ≥3 clases diferentes
